@@ -1,34 +1,56 @@
 import React, {ChangeEvent, KeyboardEvent, useEffect, useRef, useState} from 'react';
 import useStyle from "./useStyle";
 
-const optionsProps = [
-    "Hello 👋",
-    "I'm Aline 👽",
-    "I live in 🌌",
-    "I drive a 🚀"
-]
-const Dropdown = () => {
-    const styles = useStyle()
-    const [options, setOptions] = useState(new Set(optionsProps));
-    const [inputValue,setValue] = useState('')
-    const [indexActive,setIndexActive] = useState(-1)
+type Item = string
+
+interface Props {
+    items: string[],
+    onSelect: (item: Item) => void
+    value: string
+}
+
+const Dropdown = ({items, onSelect, value}: Props) => {
+    const styles = useStyle();
+    const [options, setOptions] = useState<Set<string>>(new Set(items));
+    const [inputValue, setValue] = useState<string>(value);
+    const [indexActive, setIndexActive] = useState<number>(-1);
+    const [isMenuOpen, setMenuOpen] = useState<boolean>(false);
     const dropdownRef = useRef<HTMLDivElement | null>(null);
     const activeItemRef = useRef<HTMLLIElement | null>(null);
+    const inputRef = useRef<HTMLInputElement | null>(null);
+
+    const handleOpenMenu = () => {
+        setMenuOpen(true);
+    };
+
+    const handleCloseMenu = () => {
+        setMenuOpen(false);
+    };
 
     const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
         const inputValue = event.target.value;
-        setValue(inputValue)
-        setIndexActive(-1)
+        setValue(inputValue);
+        setIndexActive(-1);
+        if (!isMenuOpen) {
+            handleOpenMenu()
+        }
     };
 
-    const handleSelectItem = (item:string,index:number) =>{
-        setValue(item)
-        setIndexActive(index)
-    }
+    const handleSelectItem = (item: string, index: number) => {
+        setValue(item);
+        setIndexActive(index);
+        if (onSelect) {
+            onSelect(item);
+        }
+    };
+
     const handleAddItem = () => {
         if (indexActive !== -1) {
             const activeItem = Array.from(options)[indexActive];
             setValue(activeItem);
+            if (onSelect) {
+                onSelect(activeItem);
+            }
         } else if (inputValue.trim() !== '') {
             if (options.has(inputValue)) {
                 return; // Ignore adding duplicate value
@@ -36,8 +58,12 @@ const Dropdown = () => {
             setOptions((prev) => new Set([inputValue, ...Array.from(prev)]));
             setIndexActive(0);
             setValue('');
+            if (onSelect) {
+                onSelect(inputValue);
+            }
         }
     };
+
     const handleKeyDown = (event: KeyboardEvent<HTMLInputElement>) => {
         if (event.key === 'ArrowUp') {
             event.preventDefault();
@@ -63,6 +89,13 @@ const Dropdown = () => {
             if (keyboardEvent.key === 'Escape') {
                 keyboardEvent.preventDefault();
                 dropdownRef.current?.blur();
+                handleCloseMenu()
+                if (indexActive === -1) {
+                    setValue('')
+                    if (onSelect) {
+                        onSelect('')
+                    }
+                }
             }
         };
 
@@ -78,31 +111,43 @@ const Dropdown = () => {
             document.removeEventListener('click', handleGlobalClick);
         };
     }, []);
+
     useEffect(() => {
         if (activeItemRef.current) {
             activeItemRef.current.scrollIntoView({
-                block: "center",
+                block: 'center',
             });
         }
     }, [indexActive]);
+    useEffect(() => {
+        if (isMenuOpen && inputRef.current) {
+            inputRef.current.focus();
+        } else {
+            inputRef.current?.blur();
+        }
+    }, [isMenuOpen]);
+
     return (
         <>
-            <div className={styles.parent} >
+            <div className={styles.parent}>
                 <input
+                    ref={inputRef}
                     placeholder={'Add New One'}
                     value={inputValue}
                     onChange={handleInputChange}
                     className={styles.input}
                     type="text"
                     onKeyDown={handleKeyDown}
+                    onFocus={handleOpenMenu} // Open menu on input focus
+                    onBlur={handleCloseMenu} // Close menu on input blur
                 />
-                <ul className={styles.list}  >
-                    {Array.from(options).map((item, index) => {
+                <ul className={styles.list}>
+                    {isMenuOpen && Array.from(options).map((item, index) => {
                         return (
                             <li
                                 ref={indexActive === index ? activeItemRef : null}
                                 className={`${styles.listItem} ${indexActive === index ? styles.activeItem : ''}`}
-                                key={index} onClick={()=>handleSelectItem(item,index)}>
+                                key={index} onClick={() => handleSelectItem(item, index)}>
                                 <span className={styles.listItemText}>{item}</span>
                                 <i className={styles.listItemIcon}>&#10003;</i>
                             </li>
