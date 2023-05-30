@@ -6,16 +6,15 @@ type Item = string
 interface Props {
     items: string[],
     onSelect: (item: Item) => void
-    value: string
+    value?: string
 }
 
 const Dropdown = ({items, onSelect, value}: Props) => {
     const styles = useStyle();
     const [options, setOptions] = useState<Set<string>>(new Set(items));
-    const [inputValue, setValue] = useState<string>(value);
+    const [inputValue, setValue] = useState<string>(value || '');
     const [indexActive, setIndexActive] = useState<number>(-1);
     const [isMenuOpen, setMenuOpen] = useState<boolean>(false);
-    const dropdownRef = useRef<HTMLDivElement | null>(null);
     const activeItemRef = useRef<HTMLLIElement | null>(null);
     const inputRef = useRef<HTMLInputElement | null>(null);
 
@@ -24,7 +23,10 @@ const Dropdown = ({items, onSelect, value}: Props) => {
     };
 
     const handleCloseMenu = () => {
-        setMenuOpen(false);
+      // TODO Check Alternative solution
+      setTimeout(()=>{
+          setMenuOpen(false);
+      },168)
     };
 
     const handleInputChange = (event: ChangeEvent<HTMLInputElement>) => {
@@ -61,6 +63,7 @@ const Dropdown = ({items, onSelect, value}: Props) => {
             if (onSelect) {
                 onSelect(inputValue);
             }
+            setMenuOpen(false);
         }
     };
 
@@ -77,18 +80,12 @@ const Dropdown = ({items, onSelect, value}: Props) => {
         }
     };
 
-    const handleOutsideClick = (event: MouseEvent) => {
-        if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
-            setIndexActive(-1);
-        }
-    };
-
     useEffect(() => {
         const handleGlobalKeyDown: EventListener = (event) => {
             const keyboardEvent = event as unknown as KeyboardEvent;
             if (keyboardEvent.key === 'Escape') {
                 keyboardEvent.preventDefault();
-                dropdownRef.current?.blur();
+                inputRef.current?.blur();
                 handleCloseMenu()
                 if (indexActive === -1) {
                     setValue('')
@@ -99,16 +96,10 @@ const Dropdown = ({items, onSelect, value}: Props) => {
             }
         };
 
-        const handleGlobalClick: EventListener = (event) => {
-            handleOutsideClick(event as MouseEvent);
-        };
-
         document.addEventListener('keydown', handleGlobalKeyDown);
-        document.addEventListener('click', handleGlobalClick);
 
         return () => {
             document.removeEventListener('keydown', handleGlobalKeyDown);
-            document.removeEventListener('click', handleGlobalClick);
         };
     }, []);
 
@@ -119,18 +110,18 @@ const Dropdown = ({items, onSelect, value}: Props) => {
             });
         }
     }, [indexActive]);
-    useEffect(() => {
+    /*useEffect(() => {
         if (isMenuOpen && inputRef.current) {
             inputRef.current.focus();
         } else {
             inputRef.current?.blur();
         }
-    }, [isMenuOpen]);
+    }, [isMenuOpen]);*/
 
     return (
         <>
-            <div className={styles.parent}>
-                <input
+            <div className={styles.parent} >
+                 <input
                     ref={inputRef}
                     placeholder={'Add New One'}
                     value={inputValue}
@@ -139,7 +130,7 @@ const Dropdown = ({items, onSelect, value}: Props) => {
                     type="text"
                     onKeyDown={handleKeyDown}
                     onFocus={handleOpenMenu} // Open menu on input focus
-                    onBlur={handleCloseMenu} // Close menu on input blur
+                    onBlur={handleCloseMenu}// Close menu on input blur
                 />
                 <ul className={styles.list}>
                     {isMenuOpen && Array.from(options).map((item, index) => {
