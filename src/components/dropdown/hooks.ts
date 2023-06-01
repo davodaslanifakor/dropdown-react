@@ -60,7 +60,6 @@ export const useDropdown = ({items, onSelect, value}: Params): DropdownOutput =>
         }
     };
 
-
     const handleArrowUp = () => {
         setIndexActive((prev) => (prev > 0 ? prev - 1 : prev));
 
@@ -102,7 +101,7 @@ export const useDropdown = ({items, onSelect, value}: Params): DropdownOutput =>
     useGlobalKeyDown(globalKeyCallbacks);
 
     useEffect(() => {
-        if (activeItemRef.current) {
+        if (activeItemRef.current && activeItemRef.current.scrollIntoView) {
             activeItemRef.current.scrollIntoView({
                 block: 'center',
             });
@@ -119,6 +118,7 @@ export const useDropdown = ({items, onSelect, value}: Params): DropdownOutput =>
         handleInputChange,
         handleOpenMenu,
         handleCloseMenu,
-        handleSelectItem
+        handleSelectItem,
+        handleAddItem
     }
 }

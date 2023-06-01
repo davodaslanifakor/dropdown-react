@@ -24,4 +24,5 @@ export interface DropdownOutput {
     handleOpenMenu: () => void;
     handleCloseMenu: () => void;
     handleSelectItem: (item: string, index: number) => void;
+    handleAddItem: () => void;
 }
