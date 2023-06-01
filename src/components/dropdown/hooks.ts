@@ -1,7 +1,6 @@
 import {ChangeEvent, useEffect, useRef, useState} from "react";
 import {DropdownOutput, Params} from "./types";
-import useGlobalKeyDown from "../../hooks/useGlobalKeyDown";
-import useInputKeyEvent from "../../hooks/useInputKeyEvent";
+import {useGlobalKeyboard, useElementKeyboard} from "../../hooks/useKeyboard";
 
 
 export const useDropdown = ({items, onSelect, value}: Params): DropdownOutput => {
@@ -47,6 +46,7 @@ export const useDropdown = ({items, onSelect, value}: Params): DropdownOutput =>
             if (onSelect) {
                 onSelect(activeItem);
             }
+            handleCloseMenu()
         } else if (inputValue.trim() !== '') {
             if (options.has(inputValue)) {
                 return; // Ignore adding duplicate value
@@ -79,7 +79,7 @@ export const useDropdown = ({items, onSelect, value}: Params): DropdownOutput =>
         Enter: handleEnter,
     };
 
-    useInputKeyEvent(inputRef, keyCallbacks);
+    useElementKeyboard(inputRef,keyCallbacks);
 
 
     const handleEscape = () => {
@@ -98,7 +98,7 @@ export const useDropdown = ({items, onSelect, value}: Params): DropdownOutput =>
     };
 
 
-    useGlobalKeyDown(globalKeyCallbacks);
+    useGlobalKeyboard(globalKeyCallbacks);
 
     useEffect(() => {
         if (activeItemRef.current && activeItemRef.current.scrollIntoView) {

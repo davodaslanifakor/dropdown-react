@@ -25,7 +25,13 @@ describe('useDropdown', () => {
         );
 
         act(() => {
-            result.current.handleInputChange({ target: { value: 'New Value' } });
+            const event = {
+                target: { value: 'New Value' },
+                currentTarget: { value: 'New Value' },
+                preventDefault: () => {},
+            };
+
+            result.current.handleInputChange(event as React.ChangeEvent<HTMLInputElement>);
         });
 
         expect(result.current.inputValue).toBe('New Value');
@@ -56,7 +62,12 @@ describe('useDropdown', () => {
         const { result } = renderHook(() => useDropdown({ items, onSelect }));
 
         act(() => {
-            result.current.handleInputChange({ target: { value: 'New Option' } });
+            const event = {
+                target: { value: 'New Option' },
+                currentTarget: { value: 'New Option' },
+                preventDefault: () => {},
+            };
+            result.current.handleInputChange(event as React.ChangeEvent<HTMLInputElement>);
         });
 
         act(() => {
